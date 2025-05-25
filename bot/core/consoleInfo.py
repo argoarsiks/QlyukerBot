@@ -4,7 +4,7 @@ from rich.table import Table
 from rich.box import DOUBLE
 
 
-def consoleInfo(currentEnergy, currentCoins, currentTickets, minePerHour):
+def consoleInfo(currentEnergy, currentCoins, currentTickets, minePerHour, status):
     os.system("cls" if os.name == "nt" else "clear")
 
     console = Console()
@@ -18,5 +18,6 @@ def consoleInfo(currentEnergy, currentCoins, currentTickets, minePerHour):
     table.add_row("Tickets", str(currentTickets))
     table.add_row("Coins/hour", f"{minePerHour}/h")
     table.add_row("Tickets/hour", f"{minePerHour / 10000:.2f}/h")
+    table.add_row("Status", str(status))
     
     console.print(table)
