@@ -13,8 +13,7 @@ def extract_tg_web_data(url: str) -> str:
     fragment = urlparse(url).fragment
     params = parse_qs(fragment)
     raw_data = unquote(params.get('tgWebAppData', [''])[0])
-    return parse_qs(raw_data).get("query_id", [""])[0]
-
+    return raw_data
 
 async def getTgWebApp():
     API_ID = int(os.getenv("API_ID"))
@@ -32,4 +31,4 @@ async def getTgWebApp():
             )
         )
         tg_web_data = extract_tg_web_data(web_view.url)
-        print(tg_web_data)
+        return tg_web_data
