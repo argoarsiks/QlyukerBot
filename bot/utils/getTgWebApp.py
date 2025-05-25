@@ -6,8 +6,6 @@ import os
 
 load_dotenv()
 
-SESSION_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "sessions", "my_session")
-
 
 def extract_tg_web_data(url: str) -> str:
     fragment = urlparse(url).fragment
@@ -15,9 +13,11 @@ def extract_tg_web_data(url: str) -> str:
     raw_data = unquote(params.get('tgWebAppData', [''])[0])
     return raw_data
 
-async def getTgWebApp():
+
+async def getTgWebApp(sessionName):
     API_ID = int(os.getenv("API_ID"))
     API_HASH = str(os.getenv("API_HASH"))
+    SESSION_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "sessions", sessionName)
 
     async with Client(SESSION_NAME, API_ID, API_HASH) as app:
         peer = await app.resolve_peer("qlyukerbot")
