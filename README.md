@@ -2,9 +2,9 @@
 
 
 ## Functions
-|       Functionality                   |       Status         |
-|---------------------------------------|----------------------|
-|       Multistreaming                  |         ✅          |
-|       Binding proxy to session        |         🔄          |
-|       Automatic booster upgrades      |         ✅          |
-|       Pyrogram .session compatibility |         ✅          |
+|       Functionality                   |Status|
+|---------------------------------------|------|
+|       Multistreaming                  |✅|
+|       Binding proxy to session        |🔄|
+|       Automatic booster upgrades      |✅|
+|       Pyrogram .session compatibility |✅|
