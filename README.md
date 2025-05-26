@@ -1,4 +1,9 @@
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # Qlyuker bot for telegram mini app
+
+🚀 **Qlyuker Bot** - is a script that allows you to automate all actions in the game [Qlyuker](https://t.me/qlyukerbot/start?startapp=bro-5819408581) 🐦 
 
 
 ## Functions
@@ -48,5 +53,8 @@ python3 main.py -a 1
 # or
 python3 main.py -a 2
 ```
-1 - Create session.
+1 - Create session.  
 2 - Run bot.
+
+# 📬 Contacts
+Do you have any questions? Write to me in Telegram: [![Contact](https://img.shields.io/badge/Write_in_Telegram-@argoars-2CA5E0?style=flat&logo=telegram)](https://t.me/argoars)  
