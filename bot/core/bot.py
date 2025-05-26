@@ -48,7 +48,7 @@ async def buy(session : aiohttp.ClientSession, upgradeId):
 async def mainLoop(sessionName):
     while True:
         cfg = await loadCfg(sessionName)
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=headers, proxy=cfg["proxy"]) as session:
             loginData = await login(session, sessionName)
             timeStart = int(time.time())
             currentEnergy = int(loginData["game"]["currentEnergy"])
