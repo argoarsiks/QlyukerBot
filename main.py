@@ -18,7 +18,7 @@ async def defConfig(sessionName):
         json.dump(cfg, f, ensure_ascii=False)
 
 
-async def regSession():
+async def createSessionCfg():
     inpName = str(input("Enter a title for the session: "))
     resultReg = await regSession(sessionName=inpName)
     if resultReg == True:
@@ -62,7 +62,7 @@ async def manualSetup():
           f"2: Starting a bot\n")
     inp = int(input("Your choice: "))
     if inp == 1:
-        await regSession()
+        await createSessionCfg()
     elif inp == 2:
         await startBot()
 
@@ -72,7 +72,7 @@ async def main():
     parser.add_argument("-a", "--action", type=int, choices=[1,2], required=False)
     args = parser.parse_args()
     if args.action == 1:
-        await regSession()
+        await createSessionCfg()
     elif args.action == 2:
         await startBot()
     else:
