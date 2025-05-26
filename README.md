@@ -48,5 +48,5 @@ python3 main.py -a 1
 # or
 python3 main.py -a 2
 ```
-1 - Create session
-2 - Run bot
+1 - Create session.
+2 - Run bot.
