@@ -1,1 +1,5 @@
+include = ["*.py"]
 line-length = 100
+
+[lint]
+select = ["E", "F", "UP", "B", "I"]
