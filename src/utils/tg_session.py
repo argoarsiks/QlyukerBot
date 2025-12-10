@@ -1,8 +1,9 @@
+import os
+from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
+
 from pyrogram import Client
 from pyrogram.raw.functions.messages import RequestWebView
-from urllib.parse import urlparse, parse_qs, unquote
-from pathlib import Path
-import os
 
 SESSION_DIR_PATH = Path(__file__).parent.parent.parent / "sessions"
 
