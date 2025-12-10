@@ -39,7 +39,7 @@ async def main():
 """)
     while True:
         print(
-            "Select an option:\n1. Create new session\n2. Start session by name\n3. Start all sessions"
+            "Select an option:\n1. Create new session\n2. Start session by name\n3. Start all sessions"  # noqa: E501
         )
         choice = int(input("Your choice: "))
 
