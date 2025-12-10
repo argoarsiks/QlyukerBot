@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY . .
 
-CMD ["python", "src/main.py"]
+CMD ["python", "src/main.py --run all"]
