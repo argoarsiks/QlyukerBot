@@ -1,0 +1,17 @@
+headers = {
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Connection": "keep-alive",
+    "Host": "qlyuker.sp.yandex.ru",
+    "Klyuk": "0110101101101100011110010111010101101011",
+    "Locale": "ru",
+    "Origin": "https://qlyuker.sp.yandex.ru",
+    "Referer": "https://qlyuker.sp.yandex.ru/front/",
+    "TGPlatform": "ios",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
+    "content-type": "application/json",
+    "sec-ch-ua": '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+    "sec-ch-ua-mobile": "?1",
+    "sec-ch-ua-platform": '"Android"',
+}
