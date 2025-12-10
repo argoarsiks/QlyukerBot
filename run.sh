@@ -9,7 +9,7 @@ else
 fi
 
 echo "🔧 Activating virtual environment..."
-source venv/bin/activate
+. venv/bin/activate
 
 echo "📋 Checking environment configuration..."
 if [ ! -f ".env" ]; then
