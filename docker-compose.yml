@@ -1,0 +1,6 @@
+services:
+  qlyuker-bot:
+    build: .
+    container_name: qlyuker-bot
+    env_file:
+      - .env
