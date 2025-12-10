@@ -1,15 +1,16 @@
 import asyncio
 import random
 import time
-from utils.headers import headers
-from core.config import settings
-from utils.tg_session import get_web_app
+
 import aiohttp
+
+from core.config import settings
+from utils.headers import headers
+from utils.tg_session import get_web_app
 
 
 class Bot:
     def __init__(self, session_name: str):
-        # Qlyuker
         self.coins_per_tap = None
         self.coins = None
         self.energy = None
@@ -21,11 +22,11 @@ class Bot:
         self.last_sync = None
 
         self.session_name = session_name
+
         self.start_data = None
         self.session: aiohttp.ClientSession = None
 
-        self.energy_lock = asyncio.Lock()
-        self.coins_lock = asyncio.Lock()
+        self.lock = asyncio.Lock()
 
     async def __aenter__(self):
         if self.session is None:
@@ -47,17 +48,19 @@ class Bot:
         if response.status == 200:
             response_data = await response.json()
 
-            self.coins_per_tap = response_data["game"]["coinsPerTap"]
-            self.candies = response_data["game"]["currentCandies"]
-            self.coins = response_data["game"]["currentCoins"]
-            self.energy = response_data["game"]["currentEnergy"]
-            self.energy_per_sec = response_data["game"]["energyPerSec"]
-            self.max_energy = response_data["game"]["maxEnergy"]
-            self.mine_per_sec = response_data["game"]["minePerSec"]
-            self.last_sync = int(time.time())
+            async with self.lock:
+                self.coins_per_tap = response_data["game"]["coinsPerTap"]
+                self.candies = response_data["game"]["currentCandies"]
+                self.coins = response_data["game"]["currentCoins"]
+                self.energy = response_data["game"]["currentEnergy"]
+                self.energy_per_sec = response_data["game"]["energyPerSec"]
+                self.max_energy = response_data["game"]["maxEnergy"]
+                self.mine_per_sec = response_data["game"]["minePerSec"]
+                self.last_sync = int(time.time())
+                self.tickets = response_data["game"]["currentTickets"]
 
     async def _sync_request(self, taps: int) -> None:
-        async with self.energy_lock:
+        async with self.lock:
             payload = {"clientTime": int(time.time()), "currentEnergy": self.energy, "taps": taps}
 
         response = await self.session.post("api/game/sync", json=payload)
@@ -65,31 +68,77 @@ class Bot:
         if response.status == 200:
             response_data = await response.json()
 
-            async with self.energy_lock, self.coins_lock:
+            async with self.lock:
                 self.candies = response_data["currentCandies"]
                 self.coins = response_data["currentCoins"]
                 self.energy = response_data["currentEnergy"]
                 self.last_sync = response_data["lastSync"]
+                self.tickets = response_data["currentTickets"]
+
+    async def _buy_ticket_request(self) -> None:
+        payload = {"count": 1}
+
+        response = await self.session.post("api/game/tickets/buy", json=payload)
+
+        if response.status == 200:
+            response_data = await response.json()
+
+            async with self.lock:
+                self.candies = response_data["result"]["currentCandies"]
+                self.tickets = response_data["result"]["currentTickets"]
 
     async def _recovery_energy_task(self) -> None:
         while True:
             await asyncio.sleep(1)
 
-            async with self.energy_lock:
+            async with self.lock:
                 self.energy += self.energy_per_sec
-                print(f"[Energy Task] Энергия восстановлена: {self.energy}/{self.max_energy}")
-                print(f"[Stats] Монет: {self.coins}")
 
     async def _emulate_taps_task(self) -> None:
         while True:
+            is_sleep = False
+
+            async with self.lock:
+                if self.energy <= random.randint(200, 500):
+                    is_sleep = True
+
+            if is_sleep:
+                await asyncio.sleep(5)
+                continue
+
             taps = random.randint(1, 51)
             clicks_per_second = random.randint(4, 9)
 
-            async with self.energy_lock:
+            async with self.lock:
                 self.energy -= taps * self.coins_per_tap
 
             await asyncio.sleep(taps / clicks_per_second)
             await self._sync_request(taps)
+
+    async def _buy_tickets_task(self) -> None:
+        while True:
+            async with self.lock:
+                can_buy = self.candies >= 10
+
+            if can_buy:
+                await self._buy_ticket_request()
+
+            await asyncio.sleep(5)
+
+    def _print_formatted(self, text: str, value=None) -> None:
+        print(f"[{self.session_name}] {text} {value}")
+
+    async def _stats_task(self) -> None:
+        while True:
+            async with self.lock:
+                self._print_formatted("Energy:", self.energy)
+                self._print_formatted("Distance:", self.coins)
+                self._print_formatted("Candies:", self.candies)
+                self._print_formatted("Tickets:", self.tickets)
+                self._print_formatted("Income per second:", self.mine_per_sec + 3)
+                print("-" * 50)
+
+            await asyncio.sleep(15)
 
     async def _setup_bot(self) -> None:
         self.start_data = await get_web_app(self.session_name, settings.api_id, settings.api_hash)
@@ -101,6 +150,8 @@ class Bot:
         tasks = [
             asyncio.create_task(self._recovery_energy_task()),
             asyncio.create_task(self._emulate_taps_task()),
+            asyncio.create_task(self._buy_tickets_task()),
+            asyncio.create_task(self._stats_task()),
         ]
 
         await asyncio.gather(*tasks)
