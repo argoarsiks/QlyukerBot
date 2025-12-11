@@ -126,7 +126,7 @@ class Bot:
             await asyncio.sleep(5)
 
     def _print_formatted(self, text: str, value=None) -> None:
-        print(f"[{self.session_name}] {text} {value}")
+        print(f"[{self.session_name}] {text} {value if value else ''}")
 
     async def _stats_task(self) -> None:
         while True:
@@ -140,18 +140,42 @@ class Bot:
 
             await asyncio.sleep(15)
 
+    async def _restart_bot(self) -> None:
+        async with self.lock:
+            await self.session.close()
+
+            self.session = aiohttp.ClientSession(
+                base_url="https://qlyuker.sp.yandex.ru", headers=headers
+            )
+
+            self._print_formatted("Bot restarted")
+
+    async def _restart_bot_task(self) -> None:
+        while True:
+            await asyncio.sleep(30 * 60)  # 30 minutes
+            await self._restart_bot()
+
+    async def _start_tasks(self) -> None:
+        self.tasks = [
+            asyncio.create_task(self._recovery_energy_task()),
+            asyncio.create_task(self._emulate_taps_task()),
+            asyncio.create_task(self._buy_tickets_task()),
+            asyncio.create_task(self._stats_task()),
+            asyncio.create_task(self._restart_bot_task()),
+        ]
+
     async def _setup_bot(self) -> None:
         self.start_data = await get_web_app(self.session_name, settings.api_id, settings.api_hash)
         await self._login()
 
     async def farm_loop(self):
         await self._setup_bot()
+        await self._start_tasks()
 
-        tasks = [
-            asyncio.create_task(self._recovery_energy_task()),
-            asyncio.create_task(self._emulate_taps_task()),
-            asyncio.create_task(self._buy_tickets_task()),
-            asyncio.create_task(self._stats_task()),
-        ]
+        self._print_formatted("Bot started successfully!")
 
-        await asyncio.gather(*tasks)
+        try:
+            while True:
+                await asyncio.sleep(1)
+        except KeyboardInterrupt:
+            self._print_formatted("Bot stopped by user")
