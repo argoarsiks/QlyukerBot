@@ -1,4 +1,7 @@
 # Qlyuker bot | Ulitker bot 🦜🐌
+
+[🇷🇺](README_ru.md) | [🇬🇧](README.md)
+
 A bot for automating the mini app [@qlyukerbot](https://t.me/qlyukerbot/start?startapp=bro-5819408581) in Telegram.
 
 # ⚡Features 

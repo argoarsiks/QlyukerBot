@@ -1,4 +1,7 @@
 # Qlyuker bot | Ulitker bot 🦜🐌
+
+[🇷🇺](README_ru.md) | [🇬🇧](README.md)
+
 Бот для автоматизации [@qlyukerbot](https://t.me/qlyukerbot/start?startapp=bro-5819408581) в телеграмме.
 
 # ⚡Возможности 
