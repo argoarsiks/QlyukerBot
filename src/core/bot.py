@@ -156,7 +156,7 @@ class Bot:
 
     async def _restart_bot_task(self) -> None:
         while True:
-            await asyncio.sleep(1 * 60)  # 30 minutes
+            await asyncio.sleep(30 * 60)  # 30 minutes
             await self._restart_bot()
 
     async def _start_tasks(self) -> None:
