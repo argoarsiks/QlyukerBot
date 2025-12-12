@@ -27,6 +27,7 @@ class Bot:
         self.session: aiohttp.ClientSession = None
 
         self.lock = asyncio.Lock()
+        self.is_running = False
 
     async def __aenter__(self):
         if self.session is None:
@@ -88,14 +89,14 @@ class Bot:
                 self.tickets = response_data["result"]["currentTickets"]
 
     async def _recovery_energy_task(self) -> None:
-        while True:
+        while self.is_running:
             await asyncio.sleep(1)
 
             async with self.lock:
                 self.energy += self.energy_per_sec
 
     async def _emulate_taps_task(self) -> None:
-        while True:
+        while self.is_running:
             is_sleep = False
 
             async with self.lock:
@@ -116,7 +117,7 @@ class Bot:
             await self._sync_request(taps)
 
     async def _buy_tickets_task(self) -> None:
-        while True:
+        while self.is_running:
             async with self.lock:
                 can_buy = self.candies >= 10
 
@@ -129,7 +130,7 @@ class Bot:
         print(f"[{self.session_name}] {text} {value if value else ''}")
 
     async def _stats_task(self) -> None:
-        while True:
+        while self.is_running:
             async with self.lock:
                 self._print_formatted("Energy:", self.energy)
                 self._print_formatted("Distance:", self.coins)
@@ -141,28 +142,43 @@ class Bot:
             await asyncio.sleep(15)
 
     async def _restart_bot(self) -> None:
-        async with self.lock:
-            await self.session.close()
+        await self._stop_tasks()
+        await self.session.close()
 
-            self.session = aiohttp.ClientSession(
-                base_url="https://qlyuker.sp.yandex.ru", headers=headers
-            )
+        self.session = aiohttp.ClientSession(
+            base_url="https://qlyuker.sp.yandex.ru", headers=headers
+        )
 
-            self._print_formatted("Bot restarted")
+        await self._setup_bot()
+        await self._start_tasks()
+
+        self._print_formatted("Bot restarted")
 
     async def _restart_bot_task(self) -> None:
         while True:
-            await asyncio.sleep(30 * 60)  # 30 minutes
+            await asyncio.sleep(1 * 60)  # 30 minutes
             await self._restart_bot()
 
     async def _start_tasks(self) -> None:
+        self.is_running = True
+
         self.tasks = [
             asyncio.create_task(self._recovery_energy_task()),
             asyncio.create_task(self._emulate_taps_task()),
             asyncio.create_task(self._buy_tickets_task()),
             asyncio.create_task(self._stats_task()),
-            asyncio.create_task(self._restart_bot_task()),
         ]
+
+    async def _stop_tasks(self) -> None:
+        self.is_running = False
+
+        for t in self.tasks:
+            if not t.done():
+                t.cancel()
+
+        if self.tasks:
+            await asyncio.gather(*self.tasks, return_exceptions=True)
+        self.tasks.clear()
 
     async def _setup_bot(self) -> None:
         self.start_data = await get_web_app(self.session_name, settings.api_id, settings.api_hash)
@@ -170,6 +186,7 @@ class Bot:
 
     async def farm_loop(self):
         await self._setup_bot()
+        asyncio.create_task(self._restart_bot_task())
         await self._start_tasks()
 
         self._print_formatted("Bot started successfully!")
