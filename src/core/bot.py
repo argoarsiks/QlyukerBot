@@ -4,7 +4,7 @@ import time
 
 import aiohttp
 
-from core.config import settings
+from core.config import ConfigManager, settings
 from utils.headers import headers
 from utils.tg_session import get_web_app
 
@@ -29,10 +29,13 @@ class Bot:
         self.lock = asyncio.Lock()
         self.is_running = False
 
+        self.proxy = None
+
     async def __aenter__(self):
-        if self.session is None:
+        if self.session:
             self.session = aiohttp.ClientSession(
-                base_url="https://qlyuker.sp.yandex.ru", headers=headers
+                base_url="https://qlyuker.sp.yandex.ru",
+                headers=headers,
             )
         return self
 
@@ -107,7 +110,7 @@ class Bot:
                 await asyncio.sleep(5)
                 continue
 
-            taps = random.randint(1, 51)
+            taps = random.randint(1, min(51, self.energy // self.coins_per_tap))
             clicks_per_second = random.randint(4, 9)
 
             async with self.lock:
@@ -145,9 +148,7 @@ class Bot:
         await self._stop_tasks()
         await self.session.close()
 
-        self.session = aiohttp.ClientSession(
-            base_url="https://qlyuker.sp.yandex.ru", headers=headers
-        )
+        await self._update_session()
 
         await self._setup_bot()
         await self._start_tasks()
@@ -180,8 +181,25 @@ class Bot:
             await asyncio.gather(*self.tasks, return_exceptions=True)
         self.tasks.clear()
 
+    async def _update_session(self) -> None:
+        if self.session:
+            await self.session.close()
+
+        self.session = aiohttp.ClientSession(
+            base_url="https://qlyuker.sp.yandex.ru", headers=headers, proxy=self.proxy
+        )
+
+    async def _setup_config(self) -> None:
+        manager = ConfigManager()
+        config = manager.load_config_by_profile(self.session_name)
+
+        self.proxy = config.get("proxy")
+
+        await self._update_session()
+
     async def _setup_bot(self) -> None:
         self.start_data = await get_web_app(self.session_name, settings.api_id, settings.api_hash)
+        await self._setup_config()
         await self._login()
 
     async def farm_loop(self):
